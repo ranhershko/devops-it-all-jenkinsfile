@@ -43,12 +43,12 @@ pipeline {
               def dir_changed = sh(script: 'dirname $changed | cut -d\'/\' -f1-2|uniq', returnStdout: true).trim()
               def dir_removed = sh(script: 'dirname $removed | cut -d\'/\' -f1-2|uniq', returnStdout: true).trim()
                         
-              // While app dir not deleted
+              // While app dir exists
               if not removed.equals(dir_removed) {
                 def dir_changed = ('$dir_changed' + ' ' + '$dir_removed')
                 def dir_changed = sh(script: 'dirname $changed | cut -d\'/\' -f1-2|uniq', returnStdout: true).trim()
               }
-              // For any Dockerfile app dir that doesn't deleted
+              // For any Dockerfile app dir that exists
               dir_changed.each { dir_name ->
                 def repository = '${dir_name}.split(\'/\')'
                 dir(dir_name) {
