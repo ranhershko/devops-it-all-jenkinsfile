@@ -38,16 +38,17 @@ pipeline {
         container ('docker') {
           steps {
             script {
-              def changed = ('$repo_files_added' + ' ' + '$repo_files_modified').flatten().join(' ') 
-              def removed = '$repo_files_removed'.join(' ') 
-              def dir_changed = sh(script: 'dirname $changed | cut -d\'/\' -f1-2|uniq', returnStdout: true).trim()
-              def dir_removed = sh(script: 'dirname $removed | cut -d\'/\' -f1-2|uniq', returnStdout: true).trim()
+              def files_changed = ('$repo_files_added' + ' ' + '$repo_files_modified').flatten().join(' ') 
+              def files_removed = '$repo_files_removed'.join(' ') 
+              def dir_changed = sh(script: 'dirname $files_changed | cut -d\'/\' -f1-2|uniq', returnStdout: true).trim()
+              def dir_removed = sh(script: 'dirname $files_removed | cut -d\'/\' -f1-2|uniq', returnStdout: true).trim()
                         
               // While app dir exists
-              if not removed.equals(dir_removed) {
+              if not files_removed.equals(dir_removed) {
                 def dir_changed = ('$dir_changed' + ' ' + '$dir_removed')
-                def dir_changed = sh(script: 'dirname $changed | cut -d\'/\' -f1-2|uniq', returnStdout: true).trim()
+                def dir_changed = sh(script: 'dirname $dir_changed | cut -d\'/\' -f1-2|uniq', returnStdout: true).trim()
               }
+
               // For any Dockerfile app dir that exists
               dir_changed.each { dir_name ->
                 def repository = '${dir_name}.split(\'/\')'
