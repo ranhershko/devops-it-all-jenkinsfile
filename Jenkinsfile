@@ -51,7 +51,7 @@ pipeline {
 
               // For any Dockerfile app dir that exists
               dir_changed.each { dir_name ->
-                def repository = '${dir_name}.split(\'/\')'
+                def repository = "'ranhershko/(System.properties['user.dir'].split('/')[-1])-${dir_name}.split(\'/\')"
                 dir(dir_name) {
                   if (fileExists('Dockerfile')) {
                     sh "docker build -t ${repository}:${BUILD_NUMBER} ."
@@ -65,7 +65,7 @@ pipeline {
           }
         }
       }
-      stage("verify dockers") {
+      stage("verify dockers images") {
         steps {
           sh "docker images"
         }
