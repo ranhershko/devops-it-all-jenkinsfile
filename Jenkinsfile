@@ -19,10 +19,10 @@ node('jenkins-slave') {
   stages {
     stage('Checkout') {
       steps {
-        git credentialsId: 'ran.hershko', url: '$repo_url'
+        git credentialsId: 'GithubSshKey', url: '$repo_url'
       }
     }
-    stage('Docker') {
+    stage('publish containers') {
       container ('docker') {
         steps {
           script {
