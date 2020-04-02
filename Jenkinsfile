@@ -64,6 +64,7 @@ node('jenkins-slave') {
             def deployment_files = sh(script: 'ls |grep "^[0-9].*.yml$"|sort', returnStdout: true).trim()
             deployment_files.each { deployment_file ->
               kubernetesDeploy(configs: '${deployment_file}', kubeconfigId: "mykubeconfig")
+            }
           }
         }
       }
