@@ -1,19 +1,8 @@
-podTemplate(
-  label: 'jenkins-slave',
-  inheritFrom: 'default',
-  containers: [
-    containerTemplate(
-      name: 'docker',
-      image: 'docker:18.02',
-      ttyEnabled: true,
-      command: 'cat'
-    )
-  ],
-  volumes: [
-    hostPathVolume(
-      hostPath: '/var/run/docker.sock',
-      mountPath: '/var/run/docker.sock'
-    )
+podTemplate(label: 'jenkins-slave', inheritFrom: 'default', containers: [
+    containerTemplate( name: 'docker', image: 'docker:18.02', ttyEnabled: true, command: 'cat')
+],
+volumes: [
+    hostPathVolume( hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
   ]
 )
 triggers {
@@ -54,10 +43,12 @@ node('jenkins-slave') {
               def repository = 'ranhershko/${project_dir_name}-${dir_name}.split(\'/\')'
               dir(dir_name) {
                 if (fileExists('Dockerfile')) {
-                  sh 'docker build -t ${repository}:${BUILD_NUMBER} .'
-                  sh 'docker tag ${repository}:latest ${repository}:${BUILD_NUMBER}'
-                  sh 'docker push ${repository}:${BUILD_NUMBER}'
-                  sh 'docker push ${repository}:latest'
+                  withDockerRegistry([ credentialsId: "DockerHubPass", url: "" ]) {
+                    sh 'docker build -t ${repository}:${BUILD_NUMBER} .'
+                    sh 'docker tag ${repository}:latest ${repository}:${BUILD_NUMBER}'
+                    sh 'docker push ${repository}:${BUILD_NUMBER}'
+                    sh 'docker push ${repository}:latest'
+                  }
                 }
               }
             }
