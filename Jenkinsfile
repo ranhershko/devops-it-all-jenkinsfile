@@ -21,6 +21,12 @@ node('jenkins-slave') {
     ])
   ])
   stages {
+    stage('test run for devops-it-all-apps') {
+      when { expression { ${repo_url} == 'empty' } }
+      steps {
+        sh "echo a test run for jenkins devops-it-all-apps pipeline job"
+      }
+    }
     stage('Checkout') {
       when { expression { ${repo_url} != 'empty' } }
       steps {
