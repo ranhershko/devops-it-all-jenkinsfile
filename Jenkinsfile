@@ -1,10 +1,3 @@
-podTemplate(label: 'jenkins-slave', inheritFrom: 'default', containers: [
-    containerTemplate( name: 'docker', image: 'docker:18.02', ttyEnabled: true, command: 'cat')
-],
-volumes: [
-    hostPathVolume( hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
-  ]
-)
 triggers {
   GenericTrigger(
     genericVariables: [
@@ -15,6 +8,14 @@ triggers {
     ]
   )
 }
+
+podTemplate(label: 'jenkins-slave', inheritFrom: 'default', containers: [
+    containerTemplate( name: 'docker', image: 'docker:18.02', ttyEnabled: true, command: 'cat')
+],
+volumes: [
+    hostPathVolume( hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
+  ]
+){
 node('jenkins-slave') {
   stages {
     stage('Checkout') {
@@ -66,4 +67,5 @@ node('jenkins-slave') {
       }
     }
   }
+}
 }
