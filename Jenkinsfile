@@ -48,7 +48,7 @@ volumes: [
             // For any Dockerfile app dir that exists
             dir_changed.each { dir_name ->
               def project_dir_name = System.properties['user.dir'].split('/')[-1]
-              def repository = "ranhershko/" + project_dir_name + "-" + dir_name.split(\'/\')
+              def repository = "ranhershko/" + project_dir_name + "-" + dir_name.split('/')
               dir(dir_name) {
                 if (fileExists('Dockerfile')) {
                   withDockerRegistry([ credentialsId: "DockerHubPass", url: "" ]) {
