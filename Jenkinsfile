@@ -15,7 +15,7 @@ node('jenkins-slave') {
           [key: 'repo_files_removed', value: "\$.commits.removed", expressionType: 'JSONPath', defaultValue: 'empty'],
           [key: 'repo_files_modified', value: "\$.commits.modified", expressionType: 'JSONPath', defaultValue: 'empty']
         ],
-        token: 'asdfghjkl123456789'
+        token: 'asdfghjkl123456789',
         causeString: 'Triggered on $repo_url'
       ]
     ])
