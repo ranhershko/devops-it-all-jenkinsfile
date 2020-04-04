@@ -21,21 +21,21 @@ volumes: [
       ])
     ])
     stage('test run for devops-it-all-apps') {
-      if (repo_url == 'empty') { 
+      if (params.repo_url == 'empty') { 
         sh "echo a test run for jenkins devops-it-all-apps pipeline job"
       }
     }
     stage('Checkout') {
-      if (repo_url != 'empty') {
-        git credentialsId: 'GithubSshKey', url: "repo_url"
+      if (params.repo_url != 'empty') {
+        git credentialsId: 'GithubSshKey', url: params.repo_url
       }
     }
     stage('publish containers') {
-      if (repo_url != 'empty') {
+      if (params.repo_url != 'empty') {
         container ('docker') {
           script {
-            def files_changed = ("repo_files_added" + ' ' + "repo_files_modified").flatten().join(' ')
-            def files_removed = "repo_files_removed".join(' ')
+            def files_changed = (params.repo_files_added + ' ' + params.repo_files_modified).flatten().join(' ')
+            def files_removed = params.repo_files_removed".join(' ')
             def dir_changed = sh(script: "dirname files_changed | cut -d\'/\' -f1-2|uniq", returnStdout: true).trim()
             def dir_removed = sh(script: "dirname files_removed | cut -d\'/\' -f1-2|uniq", returnStdout: true).trim()
 
@@ -71,7 +71,7 @@ volumes: [
       }
     }
     stage('verify dockers images') {
-      if (repo_url != 'empty') {
+      if (params.repo_url != 'empty') {
         sh 'docker images'
       }
     }
