@@ -37,7 +37,7 @@ volumes: [
             container ('docker') {
               script {
                 def files_changed = (params.repo_files_added + ' ' + params.repo_files_modified).flatten().join(' ')
-                def files_removed = params.repo_files_removed".join(' ')
+                def files_removed = params.repo_files_removed.join(' ')
                 def dir_changed = sh(script: "dirname files_changed | cut -d\'/\' -f1-2|uniq", returnStdout: true).trim()
                 def dir_removed = sh(script: "dirname files_removed | cut -d\'/\' -f1-2|uniq", returnStdout: true).trim()
     
