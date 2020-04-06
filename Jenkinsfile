@@ -40,7 +40,7 @@ volumes: [
                 def changed_files_n_dirs_list = Eval.me(repo_files_added) + Eval.me(repo_files_modified)
                 println "changed_files_n_dirs_list are $changed_files_n_dirs_list"
         changed_files_n_dirs_list = changed_files_n_dirs_list.split(" ") 
-        def changed_base_dirs = changed_files_n_dirs_list.each ({ file_or_dir -> sh 'export base_file_or_dir=\$(ls $file_or_dir |awk -F\'/\' \'{print $1}\'); if [ "$(file ${base_file_or_dir})" = "$(echo ${base_file_or_dir}: directory)" ] ; then echo ${base_file_or_dir} ; fi'
+        def changed_base_dirs = changed_files_n_dirs_list.each ({ file_or_dir -> sh('export base_file_or_dir=\$(ls $file_or_dir |awk -F\'/\' \'{print $1}\'); if [ "$(file ${base_file_or_dir})" = "$(echo ${base_file_or_dir}: directory)" ]; then echo ${base_file_or_dir}; fi) })    
         //def changed_base_dirs = changed_files_n_dirs_list.findAll({ path -> !(new File("${env.WORKSPACE}" + path.split('/')[0]).isFile()) }).collect { path.split('/')[0] }
           changed_base_dirs = changed_base_dirs.unique()
           println "changed_base_dirs are $changed_base_dirs"
@@ -48,7 +48,7 @@ volumes: [
         def removed_files_n_dirs_list = Eval.me(repo_files_removed)
         println "removed_files_n_dirs_list is: $removed_files_n_dirs_list"
         if (! removed_files_n_dirs_list.isEmpty()) {
-          def removed_base_dirs = removed_files_n_dirs_list.each ({ file_or_dir -> sh(export base_file_or_dir=\$(ls $file_or_dir |awk -F'/' '{print $1}'); if [ "$(file ${base_file_or_dir})" = "\$(echo ${base_file_or_dir}: directory)" ] ; then echo ${base_file_or_dir} ; fi
+          def removed_base_dirs = removed_files_n_dirs_list.each ({ file_or_dir -> sh(export base_file_or_dir=\$(ls $file_or_dir |awk -F'/' '{print $1}'); if [ "$(file ${base_file_or_dir})" = "\$(echo ${base_file_or_dir}: directory)" ]; then echo ${base_file_or_dir}; fi) })
           //def removed_base_dirs = removed_files_n_dirs_list.findAll({ path -> !(new File(path.split('/')[1]).isFile())}).unique()
           println "removed_base_dirs are $removed_base_dirs"
           println "removed_files_n_dirs_list are $removed_files_n_dirs_list"
