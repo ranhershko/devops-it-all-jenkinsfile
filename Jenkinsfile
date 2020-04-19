@@ -4,18 +4,20 @@ podTemplate(label: 'jenkins-slave', inheritFrom: 'default', containers: [
 volumes: [
     hostPathVolume( hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
   ]
-){
+)
+{
   node('jenkins-slave') {
     properties([
       pipelineTriggers([
         [$class: 'GenericTrigger',
           genericVariables: [
             [key: 'repo_ssh_url', value: "\$.repository.ssh_url", expressionType: 'JSONPath'],
+      [key: 'repo_full_name', value: "\$.repository.full_name", expressionType: 'JSONPath'],
             [key: 'repo_files_added', value: "\$.head_commit.added", expressionType: 'JSONPath'],
             [key: 'repo_files_removed', value: "\$.head_commit.removed", expressionType: 'JSONPath'],
             [key: 'repo_files_modified', value: "\$.head_commit.modified", expressionType: 'JSONPath']
           ],
-          token: 'asdfghjkl123456789',
+          token: '1234567890',
           causeString: "Triggered on $repo_ssh_url"
         ]
       ])
@@ -37,51 +39,55 @@ volumes: [
             container ('docker') {
               env.WORKSPACE = pwd()
         script {
-                def changed_files_n_dirs_list = Eval.me(repo_files_added) + Eval.me(repo_files_modified)
-                println "changed_files_n_dirs_list are $changed_files_n_dirs_list"
-        changed_files_n_dirs_list = changed_files_n_dirs_list.split(" ") 
-        def changed_base_dirs = changed_files_n_dirs_list.each ({ file_or_dir -> sh('export base_file_or_dir=\$(ls $file_or_dir |awk -F\'/\' \'{print $1}\'); if [ "$(file ${base_file_or_dir})" = "$(echo ${base_file_or_dir}: directory)" ]; then echo ${base_file_or_dir}; fi) })    
-        //def changed_base_dirs = changed_files_n_dirs_list.findAll({ path -> !(new File("${env.WORKSPACE}" + path.split('/')[0]).isFile()) }).collect { path.split('/')[0] }
-          changed_base_dirs = changed_base_dirs.unique()
-          println "changed_base_dirs are $changed_base_dirs"
+                def changed_path_list = Eval.me(repo_files_added) + Eval.me(repo_files_modified)
+        if (! changed_path_list.isEmpty() ) {
+          if ( changed_path_list != null ) {
+            def changed_base_paths = changed_path_list.collect { it.split('/')[0] }
+            changed_dirs_base_path = changed_base_paths.each { base_path -> 'sh returnStdout: true, script: "if [ -d \${base_path} ]; then echo \${base_path}; fi"' }
+            changed_dirs_base_path = changed_dirs_base_path.unique()
+            println "changed_dirs_base_path are $changed_dirs_base_path"
+          }
+        }
 
-        def removed_files_n_dirs_list = Eval.me(repo_files_removed)
-        println "removed_files_n_dirs_list is: $removed_files_n_dirs_list"
-        if (! removed_files_n_dirs_list.isEmpty()) {
-          def removed_base_dirs = removed_files_n_dirs_list.each ({ file_or_dir -> sh(export base_file_or_dir=\$(ls $file_or_dir |awk -F'/' '{print $1}'); if [ "$(file ${base_file_or_dir})" = "\$(echo ${base_file_or_dir}: directory)" ]; then echo ${base_file_or_dir}; fi) })
-          //def removed_base_dirs = removed_files_n_dirs_list.findAll({ path -> !(new File(path.split('/')[1]).isFile())}).unique()
-          println "removed_base_dirs are $removed_base_dirs"
-          println "removed_files_n_dirs_list are $removed_files_n_dirs_list"
-    
-          // While app dir exists
-          if (! (removed_base_dirs.equals(removed_files_n_dirs_list))) {
-          changed_base_dirs = (changed_base_dirs + removed_base_dirs).unique()
-                  }
+        def removed_path_list = Eval.me(repo_files_removed)
+        println "removed_path_list is: $removed_path_list"
+        if (! removed_path_list.isEmpty() ) { 
+          if ( removed_path_list != null ) {
+            def removed_base_paths = removed_path_list.collect { it.split('/')[0] }
+            println "removed_base_paths is: $removed_base_paths"
+            def removed_dirs_base_paths = removed_base_paths.unique()
+          removed_dirs_base_paths = removed_dirs_base_paths.collect { base_path -> 'sh returnStdout: true, script: "if [ -d \${base_path} ]; then echo \${base_path}; fi"' }
+            println "removed_dirs_base_paths is: $removed_dirs_base_paths"
+          }
         }
 
                 // For any Dockerfile app dir that exists
-        if (! changed_base_dirs.isEmpty()) {
-                  changed_base_dirs.each { dir_name ->
-                    def project_dir_name = System.properties['user.dir'].split('/')
-                    def repository = "ranhershko/" + project_dir_name + "-" + dir_name.split('/')
-                    dir(dir_name) {
-                      if (fileExists('Dockerfile')) {
-                        withDockerRegistry([ credentialsId: "DockerHubPass", url: "" ]) {
-                          sh """
-                            docker build -t repository:BUILD_NUMBER .
-                            docker tag repository:latest repository:BUILD_NUMBER
-                            docker push repository:BUILD_NUMBER
-                            docker push repository:latest
-              docker images
-                          """
+        def repository = repo_full_name
+        if (! changed_dirs_base_path.isEmpty() ) {
+          if ( changed_dirs_base_path != null ) {
+            changed_dirs_base_path.each { dir_name ->
+                      repository = "${repository}-" + dir_name.split('/')[0]
+            println "Building image $repository and push to Dockerhub"
+                      dir(dir_name) {
+                        if (fileExists('Dockerfile')) {
+                          withDockerRegistry([ credentialsId: "DockerHubPass", url: "" ]) {
+              sh """
+                              docker build --network=host -t $repository:1.$BUILD_NUMBER .
+                              docker tag $repository:1.$BUILD_NUMBER $repository:latest
+                              docker push $repository:1.$BUILD_NUMBER
+                              docker push $repository:latest
+                              docker images
+                            """
+              }
                         } 
-                      } 
-                    } 
-                  }
-                }
-                def deployment_files = sh(script: "ls |grep '^[0-9].*.yml\$'|sort", returnStdout: true).trim()
+                      }
+                    }
+          }
+        }
+        def deployment_files = sh(script: "ls |grep '^[0-9].*yaml'|sort", returnStdout: true).readLines()
+        println "Deployment file list: ${deployment_files}"
                 deployment_files.each { deployment_file ->
-                  kubernetesDeploy(configs: deployment_file, kubeconfigId: "mykubeconfig")
+          kubernetesDeploy(configs: deployment_file, kubeconfigId: "mykubeconfig") 
                 }
               }
             }
