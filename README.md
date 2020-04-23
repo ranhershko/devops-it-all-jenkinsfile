@@ -1,1 +1,11 @@
 Devops-it-all jenkinsfile repo
+
+Jenkinsfile for common devops-it-all apps pipeline
+Used by any app github repo that configure github webhook trigger
+
+Payload URL: https://{jenkins domain}/generic-webhook-trigger/invoke?token=1234567890
+Content type: application/json
+SSL Verification: Disable
+Event to send by trigger: just the push event
+
+

@@ -63,20 +63,21 @@ volumes: [
 
                 // For any Dockerfile app dir that exists
         def repository = repo_full_name
+        def repository-app = ""
         if (! changed_dirs_base_path.isEmpty() ) {
           if ( changed_dirs_base_path != null ) {
             changed_dirs_base_path.each { dir_name ->
-                      repository = "${repository}-" + dir_name.split('/')[0]
-            println "Building image $repository and push to Dockerhub"
+                      repositoryapp = "${repository}-" + dir_name.split('/')[0]
+            println "Building image ${repositoryapp} and push to Dockerhub"
                       dir(dir_name) {
                         if (fileExists('Dockerfile')) {
                           withDockerRegistry([ credentialsId: "DockerHubPass", url: "" ]) {
               sh """
-                              docker build --network=host -t $repository:1.$BUILD_NUMBER .
-                              docker tag $repository:1.$BUILD_NUMBER $repository:latest
-                              docker push $repository:1.$BUILD_NUMBER
-                              docker push $repository:latest
-                              docker images
+                              docker build --network=host -t $repositoryapp:1.$BUILD_NUMBER .
+                              docker tag $repositoryapp:1.$BUILD_NUMBER $repositoryapp:latest
+                              docker push $repositoryapp:1.$BUILD_NUMBER
+                              docker push $repositoryapp:latest
+                              #docker images
                             """
               }
                         } 
