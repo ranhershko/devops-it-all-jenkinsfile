@@ -1,6 +1,6 @@
 ## Devops-it-all jenkinsfile repo
 
-#### Jenkinsfile for common devops-it-all apps pipeline in AWS eks environment
+#### Jenkinsfile for common devops-it-all apps pipeline in AWS EKS environment
 #### Used by any app github repo that configure with github webhook trigger
 
 ###### Payload URL: https://{jenkins domain}/generic-webhook-trigger/invoke?token=1234567890
