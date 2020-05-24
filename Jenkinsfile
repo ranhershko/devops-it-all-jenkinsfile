@@ -90,30 +90,30 @@ podTemplate(
                 }
               }
             }
-      }
+          }
         }
       }
-  }
-  stage('deployment on kubernetes eks') {
-    println "repo_ssh_url is $repo_ssh_url, repo_files_modified is $repo_files_modified, repo_files_added is: $repo_files_added, repo_files_removed is: $repo_files_removed"
+    }
+    stage('deployment on kubernetes eks') {
+      println "repo_ssh_url is $repo_ssh_url, repo_files_modified is $repo_files_modified, repo_files_added is: $repo_files_added, repo_files_removed is: $repo_files_removed"
       def repository = repo_full_name
-    def namespace = repository.split('/')[1]
-    if (repo_ssh_url != 'empty') {
+      def namespace = repository.split('/')[1]
+      if (repo_ssh_url != 'empty') {
         container ('kubectl') {
           sh '''
-        kubectl get namespaces ${namespace} > /dev/null 2>&1
-      retval=$?
-      if [ ${retval} -ne 0 ]; then kubectl create namespace ${namespace} ; fi
-      kubectl config set-context jenkins-namespace --user=eks_kubernetes-devops-it-all --cluster=eks_kubernetes-devops-it-all --namespace=${namespace}
-      kubectl config use-context jenkins-namespace
-      for deploy_filename in $(ls |grep '^[0-9].*yaml'|sort); do
-        echo EKS apply ${deploy_filename}
-        docker apply -f ${deploy_filename}
-      done
-      '''
-      }
+            kubectl get namespaces ${namespace} > /dev/null 2>&1
+            retval=$?
+            if [ ${retval} -ne 0 ]; then kubectl create namespace ${namespace} ; fi
+            kubectl config set-context jenkins-namespace --user=eks_kubernetes-devops-it-all --cluster=eks_kubernetes-devops-it-all --namespace=${namespace}
+            kubectl config use-context jenkins-namespace
+            for deploy_filename in $(ls |grep '^[0-9].*yaml'|sort); do
+              echo EKS apply ${deploy_filename}
+              docker apply -f ${deploy_filename}
+            done
+          '''
+        }
+      } 
     }
-  }
   }
 }
 
